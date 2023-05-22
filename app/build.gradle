@@ -23,6 +23,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            storeFile(file("/keystore/submission.jks"))
+            storePassword("password")
+            keyAlias("release")
+            keyPassword("password")
         }
     }
     compileOptions {
