@@ -3,6 +3,7 @@ package ton.coin.wallet
 import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.content.res.Configuration
+import androidx.multidex.MultiDexApplication
 import com.soywiz.klogger.DefaultLogOutput
 import com.soywiz.klogger.Logger
 import org.koin.android.ext.koin.androidContext
@@ -12,7 +13,7 @@ import java.io.File
 
 val logger = Logger(name = "TonWallet")
 
-class TonApplication : Application() {
+class TonApplication : MultiDexApplication() {
     override fun onCreate() {
         super.onCreate()
         globalInit(this)

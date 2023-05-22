@@ -15,23 +15,29 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
     }
 
     signingConfigs {
         release {
-            storeFile file("/keystore/submission.jks")
-            storePassword "password"
-            keyAlias "release"
-            keyPassword "password"
+            storeFile file('../keystore/submission.jks')
+            storePassword 'password'
+            keyAlias 'release'
+            keyPassword 'password'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-retrofit.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-retrofit.pro'
+            signingConfig signingConfigs.release
         }
     }
 
@@ -53,6 +59,7 @@ android {
 dependencies {
     def conductorVersion = '4.0.0-preview-2'
     def reuseVersion = '0.1.1'
+    implementation "androidx.multidex:multidex:2.0.1"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0'
     implementation 'androidx.core:core-ktx:1.10.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'

@@ -1,3 +1,5 @@
 /build
 /release/app-release.apk
 /release/output-metadata.json
+/debug/app-debug.apk
+/debug/output-metadata.json

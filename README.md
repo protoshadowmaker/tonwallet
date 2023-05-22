@@ -9,4 +9,4 @@ To build:
 
 * Install [Android SDK](https://developer.android.com/studio)
 * Install Java 11
-* From project's root folder, run in command line `./gradlew aRelease`
+* From project's root folder, run in command line `./gradlew aDebug`
