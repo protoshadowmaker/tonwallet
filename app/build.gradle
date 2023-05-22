@@ -23,12 +23,18 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            storeFile(file("/keystore/submission.jks"))
-            storePassword("password")
-            keyAlias("release")
-            keyPassword("password")
         }
     }
+
+    signingConfigs {
+        release {
+            storeFile file("/keystore/submission.jks")
+            storePassword "password"
+            keyAlias "release"
+            keyPassword "password"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
