@@ -99,6 +99,7 @@ class LockController : ViewModelController() {
             )
         }
         val root = LinearLayout(inflater.context).apply {
+            setOnClickListener { }
             setBackgroundResource(R.color.black)
             orientation = LinearLayout.VERTICAL
             addView(
@@ -125,6 +126,7 @@ class LockController : ViewModelController() {
                 onStateChanged(it)
             }
         }
+        hideKeyboard()
     }
 
     private fun onStateChanged(state: ScreenData) {

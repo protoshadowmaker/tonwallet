@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import org.koin.core.component.KoinComponent
+import ton.coin.wallet.BuildConfig
 
 abstract class ViewModelController : Controller(), KoinComponent {
     val job = SupervisorJob()
@@ -57,7 +58,11 @@ abstract class ViewModelController : Controller(), KoinComponent {
         try {
             val imm = activity.getSystemService(InputMethodManager::class.java)
             imm.hideSoftInputFromWindow((activity.currentFocus ?: View(activity)).windowToken, 0)
+            activity.currentFocus?.clearFocus()
         } catch (ignored: Throwable) {
+            if (BuildConfig.DEBUG) {
+                ignored.printStackTrace()
+            }
         }
     }
 
