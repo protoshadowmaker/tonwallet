@@ -3,7 +3,6 @@ package ton.coin.wallet.repository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,6 +24,7 @@ import ton.coin.wallet.data.PendingTransaction
 import ton.coin.wallet.data.TonCoins
 import ton.coin.wallet.data.Wallet
 import ton.coin.wallet.data.WalletVersion
+import kotlin.math.min
 
 class TonRepository(
     private val dispatchers: AppDispatchers,
@@ -35,6 +35,7 @@ class TonRepository(
     private val scope = CoroutineScope(dispatchers.io + job)
     private val launchScope = CoroutineScope(dispatchers.main + job)
     private var loadTransactionsJob: Job? = null
+    private var autoLoadTransactionsCount = 0
 
     private val _repositoryState: MutableStateFlow<RepositoryState> =
         MutableStateFlow(RepositoryState())
@@ -102,6 +103,50 @@ class TonRepository(
         modifyState {
             repositoryState.copy(wallet = wallet)
         }
+        preloadCache()
+    }
+
+    private fun preloadCache() {
+        scope.launch {
+            preloadCacheInternal()
+        }
+    }
+
+    private suspend fun preloadCacheInternal() {
+        val mnemonicResult = localDs.getWalletMnemonic()
+        val mnemonic = mnemonicResult.getOrNull() ?: return
+        val privateKey = getPrivateKey(mnemonic.mnemonic)
+        val publicKey = privateKey.publicKey()
+        val v3r1Addr = WalletV3R1Contract(0, publicKey).address as AddrStd
+        val v3r2Addr = WalletV3R2Contract(0, publicKey).address as AddrStd
+        val v4r2Addr = WalletV4R2Contract(0, publicKey).address as AddrStd
+        localDs.saveWalletAddress(v3r1Addr.toString(userFriendly = true), WalletVersion.V3R1)
+        localDs.saveWalletAddress(v3r2Addr.toString(userFriendly = true), WalletVersion.V3R2)
+        localDs.saveWalletAddress(v4r2Addr.toString(userFriendly = true), WalletVersion.V4R2)
+        getAccountInfo(v3r1Addr).getOrNull()?.let {
+            localDs.saveWalletBalance(
+                TonCoins(it.storage.balance.coins.amount.value), WalletVersion.V3R1
+            )
+        }
+        getAccountInfo(v3r2Addr).getOrNull()?.let {
+            localDs.saveWalletBalance(
+                TonCoins(it.storage.balance.coins.amount.value), WalletVersion.V3R2
+            )
+        }
+        getAccountInfo(v4r2Addr).getOrNull()?.let {
+            localDs.saveWalletBalance(
+                TonCoins(it.storage.balance.coins.amount.value), WalletVersion.V4R2
+            )
+        }
+    }
+
+    suspend fun saveSecureSettings(pinCode: String) = withContext(dispatchers.io) {
+        localDs.savePinCode(pinCode)
+        localDs.savePinCodeSize(pinCode.length)
+    }
+
+    suspend fun getPinCode(): String = withContext(dispatchers.io) {
+        localDs.getPinCode().getOrNull() ?: ""
     }
 
     suspend fun isWalletValid(
@@ -115,17 +160,31 @@ class TonRepository(
     }
 
     suspend fun getCachedBalance(): Result<TonCoins> = withContext(dispatchers.io) {
-        localDs.getWalletBalance()
+        val walletVersion = localDs.getWalletVersion().getOrThrow()
+        getCachedBalance(walletVersion)
+    }
+
+    private suspend fun getCachedBalance(
+        walletVersion: WalletVersion
+    ): Result<TonCoins> = withContext(dispatchers.io) {
+        localDs.getWalletBalance(walletVersion)
     }
 
     suspend fun getBalance(): Result<TonCoins> = withContext(dispatchers.io) {
+        val walletVersion = localDs.getWalletVersion().getOrThrow()
+        getBalance(walletVersion)
+    }
+
+    private suspend fun getBalance(
+        walletVersion: WalletVersion
+    ): Result<TonCoins> = withContext(dispatchers.io) {
         val mnemonicResult = localDs.getWalletMnemonic()
         val mnemonic = mnemonicResult.getOrNull() ?: return@withContext Result.failure(Exception())
-        val accountResult = getAccount(mnemonic.mnemonic, localDs.getWalletVersion().getOrThrow())
+        val accountResult = getAccountInfo(mnemonic.mnemonic, walletVersion)
         val account = accountResult.getOrNull()
         if (account != null) {
             val balance = TonCoins(account.storage.balance.coins.amount.value)
-            localDs.saveWalletBalance(balance)
+            localDs.saveWalletBalance(balance, walletVersion)
             Result.success(balance)
         } else {
             Result.failure(Exception())
@@ -133,17 +192,22 @@ class TonRepository(
     }
 
     suspend fun getWalletAddress(): Result<String> = withContext(dispatchers.io) {
-        val cachedAddress = localDs.getWalletAddress().getOrNull()
+        val currentVersion = localDs.getWalletVersion().getOrThrow()
+        getWalletAddress(currentVersion)
+    }
+
+    suspend fun getWalletAddress(
+        version: WalletVersion
+    ): Result<String> = withContext(dispatchers.io) {
+        val cachedAddress = localDs.getWalletAddress(version).getOrNull()
         if (cachedAddress != null) {
             return@withContext Result.success(cachedAddress)
         }
         val mnemonicResult = localDs.getWalletMnemonic()
         val mnemonic = mnemonicResult.getOrNull() ?: return@withContext Result.failure(Exception())
-        val walletAddress = getWalletAddress(
-            localDs.getWalletVersion().getOrThrow(), mnemonic.mnemonic
-        )
+        val walletAddress = getWalletAddress(version, mnemonic.mnemonic)
         val userFriendlyAddress = walletAddress.toString(userFriendly = true)
-        localDs.saveWalletAddress(userFriendlyAddress)
+        localDs.saveWalletAddress(userFriendlyAddress, version)
         Result.success(userFriendlyAddress)
     }
 
@@ -151,10 +215,16 @@ class TonRepository(
         localDs.getWalletVersion()
     }
 
-    private suspend fun getAccount(
+    private suspend fun getAccountInfo(
         mnemonic: List<String>, version: WalletVersion
     ): Result<AccountInfo> = withContext(dispatchers.io) {
         val walletAddress = getWalletAddress(version, mnemonic)
+        getAccountInfo(walletAddress)
+    }
+
+    private suspend fun getAccountInfo(
+        walletAddress: AddrStd
+    ): Result<AccountInfo> = withContext(dispatchers.io) {
         val accountStateResult = remoteDs.getAccountState(walletAddress)
         val accountState =
             accountStateResult.getOrNull() ?: return@withContext Result.failure(Exception())
@@ -165,7 +235,6 @@ class TonRepository(
             Result.success(account)
         }
     }
-
 
     private suspend fun getPrivateKey(mnemonic: List<String>): PrivateKeyEd25519 =
         withContext(dispatchers.default) {
@@ -236,7 +305,7 @@ class TonRepository(
             removePendingTransaction(pendingTransaction)
             return@withContext Result.success(false)
         }
-        val account = getAccount(mnemonic.mnemonic, walletVersion).getOrNull()
+        val account = getAccountInfo(mnemonic.mnemonic, walletVersion).getOrNull()
         if (account == null) {
             removePendingTransaction(pendingTransaction)
             return@withContext Result.success(false)
@@ -306,20 +375,36 @@ class TonRepository(
         withContext(dispatchers.io) {
             reloadTransactionsInternal()
         }
+        loadNextTransactions(false)
     }
 
     private suspend fun reloadTransactionsInternal() {
+        val wallet = repositoryState.wallet
+        if (wallet !is Wallet.UserWallet) {
+            modifyState {
+                repositoryState.copy(transactionsState = LoadingState.Completed())
+            }
+            return
+        }
         val finishUpdate: suspend (transactions: List<CompletedTransaction>) -> Unit = {
-            val wallet = repositoryState.wallet
-            val newWallet = if (wallet is Wallet.UserWallet) {
-                wallet.copy(completedTransactions = it)
-            } else {
-                wallet
+            val newWallet = wallet.copy(completedTransactions = it)
+            if (it.isNotEmpty()) {
+                val version = localDs.getWalletVersion().getOrThrow()
+                localDs.saveTransactions(it, version)
             }
             modifyState {
                 repositoryState.copy(
                     wallet = newWallet,
                     transactionsState = LoadingState.Completed()
+                )
+            }
+        }
+        if (wallet.completedTransactions.isEmpty()) {
+            val version = localDs.getWalletVersion().getOrThrow()
+            val cachedTransactions = localDs.getTransactions(version).getOrNull() ?: emptyList()
+            modifyState {
+                repositoryState.copy(
+                    wallet = wallet.copy(completedTransactions = cachedTransactions)
                 )
             }
         }
@@ -345,7 +430,10 @@ class TonRepository(
         }
     }
 
-    fun loadNextTransactions() {
+    fun loadNextTransactions(byUser: Boolean = true) {
+        if (byUser) {
+            autoLoadTransactionsCount = 0
+        }
         if (!canLoadNextTransactions()) {
             return
         }
@@ -369,6 +457,10 @@ class TonRepository(
         withContext(dispatchers.io) {
             loadNextTransactionsInternal()
         }
+        if (autoLoadTransactionsCount < 5) {
+            autoLoadTransactionsCount++
+            loadNextTransactions(false)
+        }
     }
 
     private suspend fun loadNextTransactionsInternal() {
@@ -376,10 +468,19 @@ class TonRepository(
             { transactions ->
                 val wallet = repositoryState.wallet
                 val newWallet = if (wallet is Wallet.UserWallet) {
-                    wallet.copy(
-                        completedTransactions = wallet.completedTransactions.toMutableList().apply {
-                            addAll(transactions)
-                        })
+                    val newTransactions = wallet.completedTransactions.toMutableList().apply {
+                        addAll(transactions)
+                    }
+                    if (newTransactions.isNotEmpty()) {
+                        val version = localDs.getWalletVersion().getOrThrow()
+                        localDs.saveTransactions(
+                            newTransactions.subList(
+                                0,
+                                min(newTransactions.size, 10)
+                            ), version
+                        )
+                    }
+                    wallet.copy(completedTransactions = newTransactions)
                 } else {
                     wallet
                 }
@@ -429,9 +530,6 @@ class TonRepository(
         var attempt = 0
         var successful = false
         while (attempt < 4 && transactions.size < 2) {
-            if (attempt > 0) {
-                delay(100)
-            }
             result = remoteDs.getTransactions(accountAddress, fromTransactionId)
             val tr = result.getOrNull() ?: emptyList()
             successful = successful or result.isSuccess
@@ -457,27 +555,28 @@ class TonRepository(
         if (newVersion == version) {
             return
         }
-        localDs.saveWalletAddress(null)
         localDs.saveWalletVersion(newVersion)
-        localDs.saveWalletBalance(TonCoins())
         loadTransactionsJob?.cancel()
-        val balance = getBalance().getOrNull() ?: TonCoins()
-        val oldWallet = repositoryState.wallet
-        val newWallet = if (oldWallet is Wallet.UserWallet) {
-            oldWallet.copy(
-                version = newVersion,
-                balance = balance,
-                completedTransactions = emptyList()
-            )
-        } else {
-            oldWallet
+        var wallet = repositoryState.wallet
+        if (wallet !is Wallet.UserWallet) {
+            return
         }
+        val cachedBalance = getCachedBalance(newVersion).getOrNull() ?: TonCoins()
+        wallet = wallet.copy(
+            version = newVersion,
+            balance = cachedBalance,
+            completedTransactions = emptyList()
+        )
         modifyState {
             repositoryState.copy(
-                wallet = newWallet,
+                wallet = wallet,
                 transactionsState = LoadingState.Completed(),
                 haveMoreTransactions = true
             )
+        }
+        val balance = getBalance().getOrNull() ?: TonCoins()
+        modifyState {
+            repositoryState.copy(wallet = wallet.copy(balance = balance))
         }
         reloadTransactions()
     }

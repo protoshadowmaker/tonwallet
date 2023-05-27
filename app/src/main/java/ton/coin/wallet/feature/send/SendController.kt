@@ -66,7 +66,6 @@ class SendController : ViewModelController(), ControllerChangeHandler.Controller
         root?.updatePadding(
             systemBarInsets.left, systemBarInsets.top, systemBarInsets.right, 0
         )
-        //card?.updatePadding(0, 0, 0, maxOf(systemBarInsets.bottom, imeInsets.bottom))
     }
 
     override fun onChangeCompleted(
@@ -86,7 +85,7 @@ class SendController : ViewModelController(), ControllerChangeHandler.Controller
         handler: ControllerChangeHandler
     ) {
         val childRouter = getChildRouter(container)
-        if (!childRouter.hasRootController()) {
+        if (!childRouter.hasRootController() && !isPush) {
             router.popCurrentController()
         }
     }

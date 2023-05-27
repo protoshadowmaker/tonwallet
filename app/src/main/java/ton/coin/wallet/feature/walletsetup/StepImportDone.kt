@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.updatePadding
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
@@ -17,17 +16,14 @@ import ton.coin.wallet.common.lifecycle.ViewModelController
 import ton.coin.wallet.common.ui.FrameLayoutLpBuilder
 import ton.coin.wallet.common.ui.LinearLayoutLpBuilder
 import ton.coin.wallet.common.ui.alignCenter
-import ton.coin.wallet.common.ui.bodyText
-import ton.coin.wallet.common.ui.checkBox
 import ton.coin.wallet.common.ui.coloredButton
 import ton.coin.wallet.common.ui.conductor.HorizontalFadeChangeFromHandler
 import ton.coin.wallet.common.ui.conductor.TRANSITION_DURATION
 import ton.coin.wallet.common.ui.dp
 import ton.coin.wallet.common.ui.titleText
-import ton.coin.wallet.common.ui.lightToolbar
-import ton.coin.wallet.feature.walletsetup.recovery.StepRecoveryPhraseController
+import ton.coin.wallet.feature.home.HomeController
 
-class StepPasscodePreferences : ViewModelController() {
+class StepImportDone : ViewModelController() {
 
     private var root: LinearLayout? = null
 
@@ -43,32 +39,21 @@ class StepPasscodePreferences : ViewModelController() {
             gravity = Gravity.CENTER_HORIZONTAL
             addView(
                 LottieAnimationView(context).apply {
-                    setAnimation(R.raw.success)
+                    setAnimation(R.raw.congratulations)
                     repeatCount = LottieDrawable.INFINITE
                     playAnimation()
                 }, LinearLayoutLpBuilder().wDp(100).hDp(100).build()
             )
             addView(titleText(context).apply {
-                setText(R.string.passcode_properties_title)
+                setText(R.string.import_done_title)
                 alignCenter()
             }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
-                setMargins(0, 12.dp(), 0, 12.dp())
+                setMargins(0, 12.dp(), 0, 128.dp())
             })
-            addView(bodyText(context).apply {
-                setText(R.string.passcode_properties_description)
-                alignCenter()
-            }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
-                setMargins(0, 0, 0, 62.dp())
-            })
-            addView(checkBox(context).apply {
-                setText(R.string.passcode_properties_biometric)
-                isChecked = true
-            }, LinearLayoutLpBuilder().wWrap().hWrap().build().apply {
-                setMargins(0, 0, 0, 20.dp())
-            })
+
             addView(
                 coloredButton(context).apply {
-                    setText(R.string.passcode_properties_set)
+                    setText(R.string.import_done_proceed)
                     setOnClickListener { onProceedPressed() }
                 },
                 LinearLayoutLpBuilder().wWrap().hWrap().build().apply {
@@ -87,13 +72,6 @@ class StepPasscodePreferences : ViewModelController() {
         val root = LinearLayout(inflater.context).apply {
             setBackgroundResource(R.color.white)
             orientation = LinearLayout.VERTICAL
-            addView(lightToolbar(context).apply {
-                navigationIcon = ContextCompat.getDrawable(context, R.drawable.ic_back_24).apply {
-                    this?.setTint(ContextCompat.getColor(context, R.color.black))
-                }
-                setNavigationOnClickListener { onNavigationPressed() }
-                elevation = 0f
-            }, LinearLayoutLpBuilder().wMatch().build())
             addView(
                 contentContainer,
                 LinearLayoutLpBuilder().wMatch().hMatch().build()
@@ -103,13 +81,9 @@ class StepPasscodePreferences : ViewModelController() {
         return root
     }
 
-    private fun onNavigationPressed() {
-        router.popCurrentController()
-    }
-
     private fun onProceedPressed() {
-        router.replaceTopController(
-            RouterTransaction.with(StepRecoveryPhraseController())
+        router.setRoot(
+            RouterTransaction.with(HomeController())
                 .pushChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                 .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
         )

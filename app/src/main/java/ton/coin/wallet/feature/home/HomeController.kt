@@ -1,5 +1,6 @@
 package ton.coin.wallet.feature.home
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bluelinelabs.conductor.RouterTransaction
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler
 import io.github.landarskiy.reuse.adapter.DiffAdapter
 import kotlinx.coroutines.launch
 import ton.coin.wallet.R
@@ -28,7 +30,9 @@ import ton.coin.wallet.feature.home.adapter.TransactionEntry
 import ton.coin.wallet.feature.home.adapter.WalletStateData
 import ton.coin.wallet.feature.home.adapter.WalletStateEntry
 import ton.coin.wallet.feature.receive.ReceiveController
+import ton.coin.wallet.feature.secure.lock.LockController
 import ton.coin.wallet.feature.send.SendController
+import ton.coin.wallet.feature.send.scanqr.ScanQrController
 import ton.coin.wallet.feature.settings.SettingsController
 import ton.coin.wallet.util.isSameDay
 import java.time.LocalDateTime
@@ -91,7 +95,7 @@ class HomeController : ViewModelController() {
                 inflateMenu(R.menu.menu_main)
                 setOnMenuItemClickListener { item ->
                     when (item.itemId) {
-                        R.id.action_scan -> {}
+                        R.id.action_scan -> openScannerClicked()
                         R.id.action_settings -> onSettingsClicked()
                     }
                     true
@@ -150,6 +154,21 @@ class HomeController : ViewModelController() {
         )
     }
 
+    private fun openScannerClicked() {
+        router.pushController(
+            RouterTransaction.with(ScanQrController().apply {
+                resultCallback = {
+                    lifecycleScope.launch {
+                        viewModel.startDraftTransaction(it)
+                        onSendClicked()
+                    }
+                }
+            })
+                .pushChangeHandler(VerticalFadeChangeFromHandler(TRANSITION_DURATION))
+                .popChangeHandler(VerticalFadeChangeFromHandler(TRANSITION_DURATION))
+        )
+    }
+
     private fun onReceiveClicked() {
         router.pushController(
             RouterTransaction.with(ReceiveController())
@@ -166,23 +185,6 @@ class HomeController : ViewModelController() {
         )
     }
 
-    fun printMnemonic(mnemonic: List<String>) {
-        //WalletCache.save(Account(mnemonic))
-        //TonControllerLegacy.instance.init()
-    }
-
-    fun printBalance() {
-        //TonControllerLegacy.instance.printBalance()
-    }
-
-    fun send() {
-        //TonControllerLegacy.instance.sendTon()
-    }
-
-    fun printHistory() {
-        //TonControllerLegacy.instance.printHistory()
-    }
-
     override fun onInsetsChanged() {
         super.onInsetsChanged()
         root?.updatePadding(
@@ -192,5 +194,22 @@ class HomeController : ViewModelController() {
             0
         )
         recycler?.updatePadding(0, 0, 0, systemBarInsets.bottom)
+    }
+
+    override fun onActivityStarted(activity: Activity) {
+        super.onActivityStarted(activity)
+        checkAndOpenLockScreenOnStart()
+    }
+
+    private fun checkAndOpenLockScreenOnStart() {
+        val topRouter = router.backstack.lastOrNull() ?: return
+        if (topRouter.controller is LockController) {
+            return
+        }
+        router.pushController(
+            RouterTransaction.with(LockController())
+                .pushChangeHandler(FadeChangeHandler(1, false))
+                .popChangeHandler(FadeChangeHandler(TRANSITION_DURATION))
+        )
     }
 }

@@ -8,7 +8,11 @@ import android.widget.FrameLayout
 import com.bluelinelabs.conductor.RouterTransaction
 import kotlinx.coroutines.launch
 import ton.coin.wallet.common.lifecycle.ViewModelController
+import ton.coin.wallet.common.ui.conductor.NoPrevFadeChangeHandler
+import ton.coin.wallet.common.ui.conductor.TRANSITION_DURATION
+import ton.coin.wallet.common.ui.conductor.VerticalFadeChangeFromHandler
 import ton.coin.wallet.feature.home.HomeController
+import ton.coin.wallet.feature.secure.lock.LockController
 import ton.coin.wallet.feature.welcome.WelcomeController
 
 class SplashController : ViewModelController() {
@@ -40,6 +44,11 @@ class SplashController : ViewModelController() {
         when (state) {
             is ScreenState.Home -> {
                 router.replaceTopController(RouterTransaction.with(HomeController()))
+                router.pushController(
+                    RouterTransaction.with(LockController())
+                        .pushChangeHandler(NoPrevFadeChangeHandler(TRANSITION_DURATION, false))
+                        .popChangeHandler(NoPrevFadeChangeHandler(TRANSITION_DURATION))
+                )
             }
 
             is ScreenState.Welcome -> {

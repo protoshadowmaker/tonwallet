@@ -20,12 +20,15 @@ import ton.coin.wallet.common.ui.LinearLayoutLpBuilder
 import ton.coin.wallet.common.ui.coloredButton
 import ton.coin.wallet.common.ui.conductor.HorizontalFadeChangeFromHandler
 import ton.coin.wallet.common.ui.conductor.TRANSITION_DURATION
+import ton.coin.wallet.common.ui.conductor.VerticalFadeChangeFromHandler
 import ton.coin.wallet.common.ui.dp
 import ton.coin.wallet.common.ui.headlineText
 import ton.coin.wallet.common.ui.hintText
 import ton.coin.wallet.common.ui.input
 import ton.coin.wallet.common.ui.lightToolbar
+import ton.coin.wallet.common.ui.textButton
 import ton.coin.wallet.feature.send.amount.SendAmountController
+import ton.coin.wallet.feature.send.scanqr.ScanQrController
 
 class SendRecipientController : ViewModelController() {
 
@@ -77,6 +80,15 @@ class SendRecipientController : ViewModelController() {
                 setText(R.string.send_address_hint_additional)
             }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
                 setMargins(20.dp(), 8.dp(), 20.dp(), 0)
+            })
+            addView(textButton(context).apply {
+                setText(R.string.send_scan)
+                setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_scan_small, 0, 0, 0)
+                minWidth = 0.dp()
+                setPadding(12.dp(), 0, 12.dp(), 0)
+                setOnClickListener { onScan() }
+            }, LinearLayoutLpBuilder().wWrap().hWrap().build().apply {
+                setMargins(8.dp(), 4.dp(), 8.dp(), 0)
             })
             addView(FrameLayout(context).apply {
                 addView(coloredButton(context).apply {
@@ -136,6 +148,20 @@ class SendRecipientController : ViewModelController() {
             RouterTransaction.with(SendAmountController())
                 .pushChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                 .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
+        )
+    }
+
+    private fun onScan() {
+        val router = parentController?.router ?: router
+        router.pushController(
+            RouterTransaction.with(ScanQrController().apply {
+                resultCallback = { transaction ->
+                    val address = transaction.address ?: ""
+                    viewModel.onAddressChanged(address)
+                }
+            })
+                .pushChangeHandler(VerticalFadeChangeFromHandler(TRANSITION_DURATION))
+                .popChangeHandler(VerticalFadeChangeFromHandler(TRANSITION_DURATION))
         )
     }
 

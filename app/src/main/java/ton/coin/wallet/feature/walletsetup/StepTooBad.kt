@@ -11,9 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.updatePadding
 import com.airbnb.lottie.LottieAnimationView
 import com.airbnb.lottie.LottieDrawable
-import com.bluelinelabs.conductor.RouterTransaction
-import kotlinx.coroutines.launch
-import org.koin.core.component.inject
 import ton.coin.wallet.R
 import ton.coin.wallet.common.lifecycle.ViewModelController
 import ton.coin.wallet.common.ui.FrameLayoutLpBuilder
@@ -21,20 +18,14 @@ import ton.coin.wallet.common.ui.LinearLayoutLpBuilder
 import ton.coin.wallet.common.ui.alignCenter
 import ton.coin.wallet.common.ui.bodyText
 import ton.coin.wallet.common.ui.coloredButton
-import ton.coin.wallet.common.ui.conductor.HorizontalFadeChangeFromHandler
-import ton.coin.wallet.common.ui.conductor.TRANSITION_DURATION
-import ton.coin.wallet.common.ui.conductor.VerticalFadeChangeFromHandler
 import ton.coin.wallet.common.ui.dp
-import ton.coin.wallet.common.ui.titleText
 import ton.coin.wallet.common.ui.lightToolbar
-import ton.coin.wallet.data.Wallet
-import ton.coin.wallet.feature.home.HomeController
-import ton.coin.wallet.repository.TonRepository
+import ton.coin.wallet.common.ui.textButton
+import ton.coin.wallet.common.ui.titleText
 
-class StepDone : ViewModelController() {
+class StepTooBad : ViewModelController() {
 
     private var root: LinearLayout? = null
-    private val tonRepository: TonRepository by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,30 +39,40 @@ class StepDone : ViewModelController() {
             gravity = Gravity.CENTER_HORIZONTAL
             addView(
                 LottieAnimationView(context).apply {
-                    setAnimation(R.raw.success)
+                    setAnimation(R.raw.too_bad)
                     repeatCount = LottieDrawable.INFINITE
                     playAnimation()
                 }, LinearLayoutLpBuilder().wDp(100).hDp(100).build()
             )
             addView(titleText(context).apply {
-                setText(R.string.setup_done_title)
+                setText(R.string.import_too_bad_title)
                 alignCenter()
             }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
                 setMargins(0, 12.dp(), 0, 12.dp())
             })
             addView(bodyText(context).apply {
-                setText(R.string.setup_done_description)
+                setText(R.string.import_too_bad_description)
                 alignCenter()
             }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
-                setMargins(0, 0, 0, 106.dp())
+                setMargins(0, 0, 0, 86.dp())
             })
+
             addView(
                 coloredButton(context).apply {
-                    setText(R.string.setup_done_view)
-                    setOnClickListener { onProceedPressed() }
+                    setText(R.string.import_too_bad_enter)
+                    setOnClickListener { onEnterPressed() }
                 },
                 LinearLayoutLpBuilder().wWrap().hWrap().build().apply {
-                    setMargins(0, 0, 0, 100.dp())
+                    setMargins(0, 0, 0, 8.dp())
+                }
+            )
+            addView(
+                textButton(context).apply {
+                    setText(R.string.import_too_bad_create)
+                    setOnClickListener { onCreatePressed() }
+                },
+                LinearLayoutLpBuilder().wWrap().hWrap().build().apply {
+                    setMargins(0, 0, 0, 44.dp())
                 }
             )
         }
@@ -106,19 +107,12 @@ class StepDone : ViewModelController() {
         router.popCurrentController()
     }
 
-    private fun onProceedPressed() {
-        val wallet = tonRepository.repositoryStateFlow.value.wallet
-        if (wallet !is Wallet.DraftWallet) {
-            return
-        }
-        lifecycleScope.launch {
-            tonRepository.saveUserWallet(Wallet.UserWallet(wallet.mnemonic))
-            router.setRoot(
-                RouterTransaction.with(HomeController())
-                    .pushChangeHandler(VerticalFadeChangeFromHandler(TRANSITION_DURATION))
-                    .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
-            )
-        }
+    private fun onEnterPressed() {
+        router.popCurrentController()
+    }
+
+    private fun onCreatePressed() {
+        router.popToRoot()
     }
 
     override fun onInsetsChanged() {

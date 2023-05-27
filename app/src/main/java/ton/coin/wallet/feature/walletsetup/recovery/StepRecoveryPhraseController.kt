@@ -130,6 +130,7 @@ class StepRecoveryPhraseController : ViewModelController() {
 
     override fun onAttach(view: View) {
         super.onAttach(view)
+        disableScreenShot()
         lifecycleScope.launch {
             viewModel.state.collect {
                 onStateChanged(it)
@@ -139,6 +140,7 @@ class StepRecoveryPhraseController : ViewModelController() {
 
     override fun onDetach(view: View) {
         super.onDetach(view)
+        enableScreenShot()
         alertDialog?.dismiss()
     }
 

@@ -45,6 +45,13 @@ fun bodyText(context: Context): TextView {
     }
 }
 
+fun bodyTextDark(context: Context): TextView {
+    return bodyText(context).apply {
+        setTextColor(darkColors.bodyText)
+    }
+}
+
+
 fun hintText(context: Context): TextView {
     return TextView(context).apply {
         setTextSizeDp(15)
@@ -134,7 +141,7 @@ fun numericKeyboardButton(context: Context): Button {
         minWidth = 0.dp()
         minHeight = 48.dp()
         gravity = Gravity.CENTER
-        setBackgroundResource(R.drawable.button_keyboard_digital)
+        setBackgroundResource(R.drawable.button_keyboard_digital_light)
         setTextColor(lightColors.keypadButtonText)
     }
 }
@@ -144,7 +151,7 @@ fun iconKeyboardButton(context: Context): ImageButton {
         stateListAnimator = null
         minimumWidth = 0.dp()
         minimumHeight = 48.dp()
-        setBackgroundResource(R.drawable.button_keyboard_digital)
+        setBackgroundResource(R.drawable.button_keyboard_digital_light)
     }
 }
 
@@ -153,6 +160,16 @@ fun textButton(context: Context): Button {
         applyBaseStyle()
         setBackgroundResource(R.drawable.button_text)
         setTextColor(lightColors.textButtonText)
+    }
+}
+
+fun popupTextButton(context: Context): Button {
+    return Button(context).apply {
+        applyBaseStyle()
+        gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        setPadding(20.dp(), 0, 20.dp(), 0)
+        setBackgroundResource(R.drawable.button_text)
+        setTextColor(Theme.DEFAULT.lightColors.bodyText)
     }
 }
 

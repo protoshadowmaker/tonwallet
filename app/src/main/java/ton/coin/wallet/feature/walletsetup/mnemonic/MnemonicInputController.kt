@@ -154,6 +154,7 @@ abstract class MnemonicInputController<T : MnemonicInputViewModel> : ViewModelCo
             adapter = listAdapter
         }
         mnemonicPopup = PopupWindow(popupView, 200.dp(), 44.dp(), false).apply {
+            animationStyle = R.style.PopupAnimationGravityBottom
             elevation = popupElevation.toFloat()
             setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.bg_rect_round_6dp))
             setOnDismissListener {

@@ -204,6 +204,7 @@ class SettingsController : ViewModelController() {
             )
         }
         popup = PopupWindow(popupView, 100.dp(), ViewGroup.LayoutParams.WRAP_CONTENT, true).apply {
+            animationStyle = R.style.PopupAnimationGravityTop
             elevation = popupElevation.toFloat()
             setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.bg_rect_round_6dp))
         }.apply {

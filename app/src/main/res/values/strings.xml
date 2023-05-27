@@ -38,6 +38,12 @@
     <string name="import_warning_title">Incorrect words</string>
     <string name="import_warning_description">Sorry, you have entered incorrect secret words. Please double check and try again.</string>
     <string name="import_warning_ok">OK</string>
+    <string name="import_done_title">Your wallet has just been imported!</string>
+    <string name="import_done_proceed">Proceed</string>
+    <string name="import_too_bad_title">Too Bad!</string>
+    <string name="import_too_bad_description">Without the secret words you can’t restore access to the wallet.</string>
+    <string name="import_too_bad_enter">Enter 24 secret words</string>
+    <string name="import_too_bad_create">Create a new empty wallet instead</string>
     <string name="home_receive">Receive</string>
     <string name="home_send">Send</string>
     <string name="menu_scan">Scan</string>
@@ -86,4 +92,15 @@
     <string name="transaction_from">from</string>
     <string name="transaction_to">to</string>
     <string name="transaction_fee">%s storage fee</string>
+    <string name="san_title">Scan QR Code</string>
+    <string name="secure_start_title">Perfect!</string>
+    <string name="secure_start_description">Now set up a passcode to secure transactions.</string>
+    <string name="secure_start_biometric">Enable Biometric Auth</string>
+    <string name="secure_start_action">Set a Passcode</string>
+    <string name="passcode_set_title">Set a Passcode</string>
+    <string name="passcode_set_confirm_title">Confirm a Passcode</string>
+    <string name="passcode_set_options_action">Passcode options</string>
+    <string name="passcode_set_mode">Enter the %d digits in the passcode.</string>
+    <string name="passcode_set_mode_item">%d-digit code</string>
+    <string name="passcode_set_options">%d-digit code</string>
 </resources>

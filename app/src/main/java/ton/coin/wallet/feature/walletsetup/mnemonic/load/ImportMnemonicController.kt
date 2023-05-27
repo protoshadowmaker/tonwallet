@@ -1,10 +1,7 @@
 package ton.coin.wallet.feature.walletsetup.mnemonic.load
 
 import android.content.Context
-import android.view.ActionMode
 import android.view.Gravity
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
@@ -23,7 +20,8 @@ import ton.coin.wallet.common.ui.dialog
 import ton.coin.wallet.common.ui.dp
 import ton.coin.wallet.common.ui.textButton
 import ton.coin.wallet.common.ui.titleText
-import ton.coin.wallet.feature.walletsetup.StepDone
+import ton.coin.wallet.feature.secure.start.SecureStartController
+import ton.coin.wallet.feature.walletsetup.StepTooBad
 import ton.coin.wallet.feature.walletsetup.mnemonic.MnemonicInputController
 
 class ImportMnemonicController : MnemonicInputController<ImportMnemonicViewModel>() {
@@ -58,6 +56,7 @@ class ImportMnemonicController : MnemonicInputController<ImportMnemonicViewModel
             }, LinearLayoutLpBuilder().wMatch().hWrap().build())
             addView(textButton(context).apply {
                 setText(R.string.import_dont_have)
+                setOnClickListener { doNotHave() }
             }, LinearLayoutLpBuilder().wWrap().hWrap().build())
 
             (0 until 24).map {
@@ -103,7 +102,7 @@ class ImportMnemonicController : MnemonicInputController<ImportMnemonicViewModel
 
             OneTimeAction.PERFECT -> {
                 router.pushController(
-                    RouterTransaction.with(StepDone())
+                    RouterTransaction.with(SecureStartController("import"))
                         .pushChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                         .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                 )
@@ -135,5 +134,13 @@ class ImportMnemonicController : MnemonicInputController<ImportMnemonicViewModel
 
     private fun onContinuePressed() {
         viewModel.importAccount(numericInputs.map { it.text.trim() })
+    }
+
+    private fun doNotHave() {
+        router.pushController(
+            RouterTransaction.with(StepTooBad())
+                .pushChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
+                .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
+        )
     }
 }

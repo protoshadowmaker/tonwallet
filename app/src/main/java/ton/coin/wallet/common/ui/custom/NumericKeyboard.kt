@@ -1,11 +1,12 @@
 package ton.coin.wallet.common.ui.custom
 
 import android.content.Context
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
-import androidx.core.view.isVisible
 import ton.coin.wallet.R
 import ton.coin.wallet.common.ui.LinearLayoutLpBuilder
 import ton.coin.wallet.common.ui.dp
@@ -17,10 +18,16 @@ class NumericKeyboard(context: Context) : LinearLayout(context) {
     var keyPressListener: ((key: String) -> Unit)? = null
     var decimalEnabled: Boolean = true
         set(value) {
-            decimalButton?.isVisible = value
+            decimalButton?.visibility = if (value) {
+                View.VISIBLE
+            } else {
+                View.INVISIBLE
+            }
             field = value
         }
     private var decimalButton: Button? = null
+    private val textButtons = mutableListOf<Button>()
+    private val iconButtons = mutableListOf<ImageButton>()
 
     init {
         val margin = 3.dp()
@@ -32,18 +39,24 @@ class NumericKeyboard(context: Context) : LinearLayout(context) {
                 "1",
                 marginRight = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "2",
                 marginLeft = margin,
                 marginRight = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "3",
                 marginLeft = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
         })
         addView(LinearLayout(context).apply {
             orientation = HORIZONTAL
@@ -53,20 +66,26 @@ class NumericKeyboard(context: Context) : LinearLayout(context) {
                 marginTop = margin,
                 marginRight = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "5",
                 marginLeft = margin,
                 marginTop = margin,
                 marginRight = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "6",
                 marginLeft = margin,
                 marginTop = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
         })
         addView(LinearLayout(context).apply {
             orientation = HORIZONTAL
@@ -76,42 +95,69 @@ class NumericKeyboard(context: Context) : LinearLayout(context) {
                 marginTop = margin,
                 marginRight = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "8",
                 marginLeft = margin,
                 marginTop = margin,
                 marginRight = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "9",
                 marginLeft = margin,
                 marginTop = margin,
                 marginBottom = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
         })
         addView(LinearLayout(context).apply {
             orientation = HORIZONTAL
             weightSum = 3f
-            addButton(
+            decimalButton = addButton(
                 ".",
                 marginTop = margin,
                 marginRight = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addButton(
                 "0",
                 marginLeft = margin,
                 marginTop = margin,
                 marginRight = margin
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                textButtons.add(this)
+            }
             addIconButton(
                 "e",
                 R.drawable.ic_delete,
                 marginLeft = margin,
                 marginTop = margin,
-            ) { key -> keyPressListener?.invoke(key) }
+            ) { key -> keyPressListener?.invoke(key) }.apply {
+                iconButtons.add(this)
+            }
         })
+    }
+
+    fun setStyle(@DrawableRes backgroundDrawableRes: Int, @ColorInt contentColor: Int) {
+        textButtons.forEach {
+            it.apply {
+                setBackgroundResource(backgroundDrawableRes)
+                setTextColor(contentColor)
+            }
+        }
+        iconButtons.forEach {
+            it.apply {
+                setBackgroundResource(backgroundDrawableRes)
+                setImageDrawable(drawable.mutate().apply { setTint(contentColor) })
+            }
+        }
     }
 }
 

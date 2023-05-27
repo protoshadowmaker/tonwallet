@@ -1,4 +1,4 @@
-package ton.coin.wallet.feature.walletsetup
+package ton.coin.wallet.feature.secure.start
 
 import android.os.Bundle
 import android.view.Gravity
@@ -22,11 +22,11 @@ import ton.coin.wallet.common.ui.coloredButton
 import ton.coin.wallet.common.ui.conductor.HorizontalFadeChangeFromHandler
 import ton.coin.wallet.common.ui.conductor.TRANSITION_DURATION
 import ton.coin.wallet.common.ui.dp
-import ton.coin.wallet.common.ui.titleText
 import ton.coin.wallet.common.ui.lightToolbar
-import ton.coin.wallet.feature.walletsetup.recovery.StepRecoveryPhraseController
+import ton.coin.wallet.common.ui.titleText
+import ton.coin.wallet.feature.secure.passcode.PasscodeController
 
-class StepNewSuccessController : ViewModelController() {
+class SecureStartController(private val source: String = "") : ViewModelController() {
 
     private var root: LinearLayout? = null
 
@@ -48,21 +48,21 @@ class StepNewSuccessController : ViewModelController() {
                 }, LinearLayoutLpBuilder().wDp(100).hDp(100).build()
             )
             addView(titleText(context).apply {
-                setText(R.string.new_wallet_success_title)
+                setText(R.string.secure_start_title)
                 alignCenter()
             }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
                 setMargins(0, 12.dp(), 0, 12.dp())
             })
             addView(bodyText(context).apply {
-                setText(R.string.new_wallet_success_description)
+                setText(R.string.secure_start_description)
                 alignCenter()
             }, LinearLayoutLpBuilder().wMatch().hWrap().build().apply {
-                setMargins(0, 0, 0, 116.dp())
+                setMargins(0, 0, 0, 86.dp())
             })
 
             addView(
                 coloredButton(context).apply {
-                    setText(R.string.new_wallet_success_passcode)
+                    setText(R.string.secure_start_action)
                     setOnClickListener { onProceedPressed() }
                 },
                 LinearLayoutLpBuilder().wWrap().hWrap().build().apply {
@@ -103,7 +103,7 @@ class StepNewSuccessController : ViewModelController() {
 
     private fun onProceedPressed() {
         router.pushController(
-            RouterTransaction.with(StepRecoveryPhraseController())
+            RouterTransaction.with(PasscodeController(source = source))
                 .pushChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                 .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
         )

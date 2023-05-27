@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="TonAlertDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="dialogCornerRadius">10dp</item>
+    </style>
+
+    <style name="PopupAnimationGravityBottom">
+        <item name="android:windowEnterAnimation">@anim/popup_in_gravity_bottom</item>
+        <item name="android:windowExitAnimation">@anim/popup_out_gravity_bottom</item>
+    </style>
+
+    <style name="PopupAnimationGravityTop">
+        <item name="android:windowEnterAnimation">@anim/popup_in_gravity_top</item>
+        <item name="android:windowExitAnimation">@anim/popup_out_gravity_top</item>
     </style>
 </resources>

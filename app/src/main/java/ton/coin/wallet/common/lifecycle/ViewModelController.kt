@@ -1,6 +1,7 @@
 package ton.coin.wallet.common.lifecycle
 
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -59,4 +60,29 @@ abstract class ViewModelController : Controller(), KoinComponent {
         } catch (ignored: Throwable) {
         }
     }
+
+
+    fun disableScreenShot() {
+        setFlagSecure(true)
+    }
+
+    fun enableScreenShot() {
+        setFlagSecure(false)
+    }
+
+    private fun setFlagSecure(disabled: Boolean) {
+        val activity = this.activity ?: return
+        if (disabled) {
+            try {
+                activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            } catch (ignore: Exception) {
+            }
+        } else {
+            try {
+                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            } catch (ignore: Exception) {
+            }
+        }
+    }
+
 }

@@ -19,7 +19,7 @@ import ton.coin.wallet.common.ui.conductor.TRANSITION_DURATION
 import ton.coin.wallet.common.ui.dialog
 import ton.coin.wallet.common.ui.dp
 import ton.coin.wallet.common.ui.titleText
-import ton.coin.wallet.feature.walletsetup.StepDone
+import ton.coin.wallet.feature.secure.start.SecureStartController
 import ton.coin.wallet.feature.walletsetup.mnemonic.MnemonicInputController
 
 class StepTestPhraseController : MnemonicInputController<StepTestPhraseViewModel>() {
@@ -107,7 +107,7 @@ class StepTestPhraseController : MnemonicInputController<StepTestPhraseViewModel
 
             OneTimeAction.PERFECT -> {
                 router.pushController(
-                    RouterTransaction.with(StepDone())
+                    RouterTransaction.with(SecureStartController("create"))
                         .pushChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                         .popChangeHandler(HorizontalFadeChangeFromHandler(TRANSITION_DURATION))
                 )

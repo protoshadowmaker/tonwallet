@@ -48,7 +48,7 @@ data class Theme(val lightColors: Colors, val darkColors: Colors) {
                 textButtonText = 0xFF339CEC.toInt(),
                 textButtonDangerText = 0xFFFE3C30.toInt(),
                 titleText = 0xFF222222.toInt(),
-                bodyText = 0xFF000000.toInt(),
+                bodyText = 0xFFFFFFFF.toInt(),
                 bodyTextLight = 0xFF757575.toInt(),
                 hintText = 0x80000000.toInt(),
                 dialogTitleText = 0xFF000000.toInt(),

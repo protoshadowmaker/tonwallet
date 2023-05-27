@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.inject
+import ton.coin.wallet.BuildConfig
 import ton.coin.wallet.data.Wallet
 import ton.coin.wallet.data.WalletMnemonic
 import ton.coin.wallet.feature.walletsetup.mnemonic.MnemonicInputViewModel
@@ -38,6 +39,14 @@ class StepTestPhraseViewModel : MnemonicInputViewModel() {
     }
 
     fun onContinue(words: List<String>) {
+        if(BuildConfig.DEBUG) {
+            onStateChanged(
+                state.value.copy(
+                    oneTimeAction = OneTimeAction.PERFECT
+                )
+            )
+            return
+        }
         val indexes = state.value.checkIndexes
         val mnemonic = state.value.mnemonic.mnemonic
         if (indexes.isEmpty() || mnemonic.isEmpty()) {

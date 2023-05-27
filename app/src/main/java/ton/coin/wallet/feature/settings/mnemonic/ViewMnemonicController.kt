@@ -117,11 +117,17 @@ class ViewMnemonicController : ViewModelController() {
 
     override fun onAttach(view: View) {
         super.onAttach(view)
+        disableScreenShot()
         lifecycleScope.launch {
             viewModel.state.collect {
                 onStateChanged(it)
             }
         }
+    }
+
+    override fun onDetach(view: View) {
+        super.onDetach(view)
+        enableScreenShot()
     }
 
     private fun onStateChanged(state: ScreenState) {

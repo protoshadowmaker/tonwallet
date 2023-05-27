@@ -1,5 +1,6 @@
 package ton.coin.wallet.data
 
+import kotlinx.serialization.Serializable
 import org.ton.bitstring.BitString
 import org.ton.block.AddrStd
 import org.ton.block.Either
@@ -11,17 +12,24 @@ import org.ton.cell.CellSlice
 import org.ton.lite.client.internal.TransactionId
 import org.ton.lite.client.internal.TransactionInfo
 import org.ton.tlb.CellRef
+import ton.coin.wallet.common.serializable.DirectionSerializer
+import ton.coin.wallet.common.serializable.LocalDateTimeSerializer
+import ton.coin.wallet.common.serializable.TransactionIdSerializer
 import java.math.BigInteger
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+@Serializable
 data class CompletedTransaction(
+    @Serializable(TransactionIdSerializer::class)
     val id: TransactionId,
     val address: String,
     val amount: TonCoins,
     val fee: TonCoins,
+    @Serializable(DirectionSerializer::class)
     val direction: Direction,
+    @Serializable(LocalDateTimeSerializer::class)
     val date: LocalDateTime,
     val message: String
 ) {

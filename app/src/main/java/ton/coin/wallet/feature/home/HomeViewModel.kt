@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.inject
 import ton.coin.wallet.common.lifecycle.ConductorViewModel
 import ton.coin.wallet.data.CompletedTransaction
+import ton.coin.wallet.data.DraftTransaction
 import ton.coin.wallet.data.PendingTransaction
 import ton.coin.wallet.data.TonCoins
 import ton.coin.wallet.data.Wallet
@@ -55,6 +56,10 @@ class HomeViewModel : ConductorViewModel() {
             )
         }
         reloadTransactions()
+    }
+
+    suspend fun startDraftTransaction(transaction: DraftTransaction) {
+        tonRepository.saveDraftTransaction(transaction)
     }
 
     fun loadNextTransactions() {
