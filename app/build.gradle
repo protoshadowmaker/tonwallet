@@ -63,6 +63,7 @@ dependencies {
     implementation('org.ton:ton-kotlin:0.2.16') {
         exclude group: 'org.ton', module: 'ton-kotlin-block-jvm'
         exclude group: 'org.ton', module: 'ton-kotlin-liteclient-jvm'
+        exclude group: 'org.ton', module: 'ton-kotlin-boc-jvm'
     }
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0'
     implementation 'androidx.core:core-ktx:1.10.1'

@@ -124,7 +124,11 @@ class HomeController : ViewModelController() {
     private fun onStateChanged(state: ScreenData) {
         val dataBuilder = defaultScope.newDataBuilder().withWalletStateViewHolderFactory(
             WalletStateEntry(
-                data = WalletStateData(address = state.walletAddress, balance = state.balance),
+                data = WalletStateData(
+                    address = state.walletAddress,
+                    balance = state.balance,
+                    walletVersion = state.walletVersion
+                ),
                 onReceiveCallback = ::onReceiveClicked,
                 onSendCallback = ::onSendClicked
             )

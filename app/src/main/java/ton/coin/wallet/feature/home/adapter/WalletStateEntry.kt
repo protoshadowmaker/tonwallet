@@ -2,6 +2,7 @@ package ton.coin.wallet.feature.home.adapter
 
 import io.github.landarskiy.reuse.TypedDiffEntry
 import ton.coin.wallet.data.TonCoins
+import ton.coin.wallet.data.WalletVersion
 
 class WalletStateEntry(
     val data: WalletStateData,
@@ -19,5 +20,6 @@ class WalletStateEntry(
 
 data class WalletStateData(
     val address: String,
-    val balance: TonCoins
+    val balance: TonCoins,
+    val walletVersion: WalletVersion
 )

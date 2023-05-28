@@ -9,6 +9,7 @@ import ton.coin.wallet.common.ui.dp
 import ton.coin.wallet.common.ui.formatter.TonCoinsFormatter
 import ton.coin.wallet.common.ui.formatter.WalletAddressFormatter
 import ton.coin.wallet.common.ui.span.size
+import ton.coin.wallet.data.WalletVersion
 
 class WalletStateViewHolder(
     view: View,
@@ -26,6 +27,11 @@ class WalletStateViewHolder(
             if (amountParts.size > 1) {
                 size(32.dp()) { append(".${amountParts[1]}") }
             }
+        }
+        if (data.data.walletVersion == WalletVersion.V4R2) {
+            sendButton.visibility = View.VISIBLE
+        } else {
+            sendButton.visibility = View.INVISIBLE
         }
         sendButton.setOnClickListener {
             data.onSendCallback()

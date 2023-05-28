@@ -350,22 +350,13 @@ class TonRepository(
     }
 
     fun reloadTransactions() {
-        if (!canReloadTransactions()) {
-            return
-        }
+        loadTransactionsJob?.cancel()
         loadTransactionsJob = launchScope.launch {
             checkAndReloadTransactionsInternal()
         }
     }
 
-    private fun canReloadTransactions(): Boolean {
-        return repositoryState.transactionsState != LoadingState.Loading
-    }
-
     private suspend fun checkAndReloadTransactionsInternal() {
-        if (!canReloadTransactions()) {
-            return
-        }
         modifyState {
             repositoryState.copy(
                 transactionsState = LoadingState.Loading,
@@ -375,6 +366,7 @@ class TonRepository(
         withContext(dispatchers.io) {
             reloadTransactionsInternal()
         }
+        loadTransactionsJob = null
         loadNextTransactions(false)
     }
 

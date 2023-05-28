@@ -11,6 +11,7 @@ import ton.coin.wallet.data.DraftTransaction
 import ton.coin.wallet.data.PendingTransaction
 import ton.coin.wallet.data.TonCoins
 import ton.coin.wallet.data.Wallet
+import ton.coin.wallet.data.WalletVersion
 import ton.coin.wallet.repository.LoadingState
 import ton.coin.wallet.repository.RepositoryState
 import ton.coin.wallet.repository.TonRepository
@@ -40,11 +41,13 @@ class HomeViewModel : ConductorViewModel() {
         lifecycleScope.launch {
             val cachedBalance = tonRepository.getCachedBalance().getOrNull()
             val walletAddress = tonRepository.getWalletAddress().getOrNull()
+            val walletVersion = tonRepository.getWalletVersion().getOrNull()
             onScreenDataChanged(
                 state.copy(
                     status = ScreenState.Loading,
                     balance = cachedBalance ?: state.balance,
-                    walletAddress = walletAddress ?: state.walletAddress
+                    walletAddress = walletAddress ?: state.walletAddress,
+                    walletVersion = walletVersion ?: state.walletVersion
                 )
             )
             val balance = tonRepository.getBalance().getOrNull()
@@ -75,6 +78,7 @@ class HomeViewModel : ConductorViewModel() {
         if (wallet is Wallet.UserWallet) {
             val cachedBalance = tonRepository.getCachedBalance().getOrNull()
             val walletAddress = tonRepository.getWalletAddress().getOrNull()
+            val walletVersion = tonRepository.getWalletVersion().getOrNull()
             onScreenDataChanged(
                 this.state.copy(
                     balance = cachedBalance ?: this.state.balance,
@@ -85,7 +89,8 @@ class HomeViewModel : ConductorViewModel() {
                         ScreenState.Successful
                     } else {
                         ScreenState.Loading
-                    }
+                    },
+                    walletVersion = walletVersion ?: this.state.walletVersion
                 )
             )
         }
@@ -102,7 +107,8 @@ data class ScreenData(
     val pendingTransactions: List<PendingTransaction> = emptyList(),
     val completedTransactions: List<CompletedTransaction> = emptyList(),
     val status: ScreenState = ScreenState.Pure,
-    val transactionsStatus: ScreenState = ScreenState.Pure
+    val transactionsStatus: ScreenState = ScreenState.Pure,
+    val walletVersion: WalletVersion = WalletVersion.V4R2,
 ) {
     val isLoadingState: Boolean get() = status == ScreenState.Loading || transactionsStatus == ScreenState.Loading
 }
